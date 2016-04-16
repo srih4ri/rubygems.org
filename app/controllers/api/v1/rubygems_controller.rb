@@ -39,18 +39,41 @@ class Api::V1::RubygemsController < Api::BaseController
 
   def reverse_dependencies
     names = begin
-      if params[:only] == "development"
-        Rubygem.reverse_development_dependencies(params[:id]).pluck(:name)
-      elsif params[:only] == "runtime"
-        Rubygem.reverse_runtime_dependencies(params[:id]).pluck(:name)
-      else
-        Rubygem.reverse_dependencies(params[:id]).pluck(:name)
-      end
-    end
+              if params[:only] == "development"
+                Rubygem.reverse_development_dependencies(params[:id]).pluck(:name)
+              elsif params[:only] == "runtime"
+                Rubygem.reverse_runtime_dependencies(params[:id]).pluck(:name)
+              else
+                Rubygem.reverse_dependencies(params[:id]).pluck(:name)
+              end
+            end
 
     respond_to do |format|
       format.json { render json: names }
       format.yaml { render yaml: names }
     end
   end
+
+  def dependencies
+    version = Version.find_by(full_name: params[:id])
+    if version.present?
+      names = begin
+                if params[:only] == "development"
+                  Version.find_by(full_name: params[:id]).dependencies.development.pluck(:name,:id)
+                elsif params[:only] == "runtime"
+                  Version.find_by(full_name: params[:id]).dependencies.runtime.pluck(:name,:id)
+                else
+                  Version.find_by(full_name: params[:id]).dependencies.pluck(:name,:id)
+                end
+              end
+
+      respond_to do |format|
+        format.json { render json: names }
+        format.yaml { render yaml: names }
+      end
+    else
+      render text: t(:this_rubygem_could_not_be_found), status: :not_found
+    end
+  end
+
 end

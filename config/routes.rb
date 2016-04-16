@@ -37,6 +37,7 @@ Rails.application.routes.draw do
         resources :versions, only: :show, format: true do
           member do
             get :reverse_dependencies, format: true
+            get :dependencies, format: true
             get 'latest',
               to: 'versions#latest',
               as: 'latest',
@@ -62,6 +63,7 @@ Rails.application.routes.draw do
         format: /json|yaml/ do
         member do
           get :reverse_dependencies
+          get :dependencies
         end
         collection do
           delete :yank, to: "deletions#create"
